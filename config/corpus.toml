@@ -1,1 +1,47 @@
-[matches]
+[[matches]]
+match_id = 3869685
+label = "FIFA World Cup 2022 Final — Argentina vs France"
+competition = "FIFA World Cup"
+season = "2022"
+
+[[matches]]
+match_id = 8658
+label = "FIFA World Cup 2018 Final — France vs Croatia"
+competition = "FIFA World Cup"
+season = "2018"
+
+[[matches]]
+match_id = 8656
+label = "FIFA World Cup 2018 Semi-finals — Croatia vs England"
+competition = "FIFA World Cup"
+season = "2018"
+
+[[matches]]
+match_id = 3795506
+label = "UEFA Euro 2020 Final — Italy vs England"
+competition = "UEFA Euro"
+season = "2020"
+
+[[matches]]
+match_id = 3943043
+label = "UEFA Euro 2024 Final — Spain vs England"
+competition = "UEFA Euro"
+season = "2024"
+
+[[matches]]
+match_id = 22912
+label = "Champions League 2018/2019 Final — Tottenham Hotspur vs Liverpool"
+competition = "Champions League"
+season = "2018/2019"
+
+[[matches]]
+match_id = 18245
+label = "Champions League 2017/2018 Final — Real Madrid vs Liverpool"
+competition = "Champions League"
+season = "2017/2018"
+
+[[matches]]
+match_id = 3750201
+label = "Champions League 2008/2009 Final — Barcelona vs Manchester United"
+competition = "Champions League"
+season = "2008/2009"

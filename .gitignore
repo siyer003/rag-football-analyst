@@ -9,6 +9,9 @@ wheels/
 # Virtual environments
 .venv
 
+# Scratch directory
+scratch/
+
 # Data stores
 data/chroma/*
 !data/chroma/.gitkeep
