@@ -1,0 +1,55 @@
+[project]
+name = "footballanalyst"
+version = "0.1.0"
+description = "Football tactical-analysis RAG assistant"
+readme = "README.md"
+authors = [
+    { name = "Sudhanshu Iyer", email = "sudhanshuiyer10971d@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "structlog>=24.1.0",
+    "chromadb>=0.5.0",
+    "sentence-transformers>=3.0.0",
+    "statsbombpy>=1.11.0",
+    "httpx>=0.27.0",
+    "beautifulsoup4>=4.12.0",
+    "streamlit>=1.35.0",
+    "groq>=0.9.0",
+    "google-genai>=0.1.0",
+]
+
+[project.scripts]
+footballanalyst = "footballanalyst.app:main"
+
+[build-system]
+requires = ["uv_build>=0.12.3,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "ruff>=0.4.0",
+    "mypy>=1.10.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "."]
+markers = [
+    "integration: mark test as integration test"
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "C4", "SIM"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+mypy_path = "src"
