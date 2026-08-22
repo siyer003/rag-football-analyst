@@ -42,3 +42,20 @@ A persistent log of code smells, architectural debt, and follow-up items flagged
 
 - **Refused Bequest**: `FakeVectorStore` inherits from concrete `VectorStore` to satisfy mypy type checking without invoking `super().__init__()` to avoid ChromaDB client initialization. Protocol abstraction for `VectorStore` deferred to future store refactoring pass. *(Flagged during Ticket 06 review)*
 
+---
+
+## `src/footballanalyst/ingestion/__init__.py` *(resolved)*
+
+- **Circular Import — Fixed in Ticket 09**: `ingestion/__init__.py` previously eagerly re-exported `IngestionPipeline` and `IngestionResult`, causing a `store → ingestion/__init__ → pipeline → store` circular import that was latent (masked by pytest's module-load ordering). Removed from `__init__.py` since no caller imported them via the package; all consumers already used `from footballanalyst.ingestion.pipeline import ...` directly. *(Flagged and resolved during Ticket 09)*
+
+---
+
+## `src/footballanalyst/app/ask.py`
+
+- **LLM Error Handling Deferred**: `ask()` does not catch or wrap LLM call failures (timeouts, rate limits, API errors). Exceptions propagate to the caller as-is. A proper `Answer(error=...)` state or retry/circuit-breaker logic is deferred. Structured error logging can be added in Ticket 12; retry/recovery in a future ticket. *(Flagged during Ticket 09)*
+
+---
+
+## `src/footballanalyst/generation/prompt.py`
+
+- **No Prompt Truncation**: `build_prompt()` has no truncation strategy. At v1 corpus scale (top-8 chunks, paragraph-sized texts ≈ 4,000 tokens total), this is safely within all supported providers' context windows. If the corpus grows or top-k increases, a truncation strategy should be added. *(Flagged during Ticket 09)*

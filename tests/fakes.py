@@ -4,9 +4,20 @@ from footballanalyst.store.vector_store import ScoredChunk, VectorStore
 
 
 class FakeLLMProvider:
-    """Fake LLM provider for deterministic offline testing."""
+    """Fake LLM provider for deterministic offline testing.
 
-    pass
+    ``complete()`` returns a fixed canned response that includes ``[1]`` so
+    citation-parsing tests can assert non-empty citations without any network call.
+    """
+
+    CANNED_RESPONSE = (
+        "Liverpool's high press was highly effective in the first half [1]. "
+        "Klopp's 4-3-3 shape allowed the front three to trigger pressing traps [1]."
+    )
+
+    def complete(self, system: str, user: str) -> str:  # noqa: ARG002
+        return self.CANNED_RESPONSE
+
 
 
 class FakeEmbeddingModel:

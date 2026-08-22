@@ -1,7 +1,6 @@
 """Data ingestion package."""
 
 from footballanalyst.ingestion.event_chunker import EventSummaryChunker
-from footballanalyst.ingestion.pipeline import IngestionPipeline, IngestionResult
 from footballanalyst.ingestion.statsbomb_fetcher import StatsBombFetcher
 from footballanalyst.ingestion.types import (
     Chunk,
@@ -14,8 +13,6 @@ __all__ = [
     "Chunk",
     "EventSummary",
     "EventSummaryChunker",
-    "IngestionPipeline",
-    "IngestionResult",
     "NarrativeChunk",
     "RawMatchData",
     "StatsBombFetcher",
