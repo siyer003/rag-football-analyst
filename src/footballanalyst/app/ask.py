@@ -1,13 +1,13 @@
 from footballanalyst.app.types import Answer
 from footballanalyst.corpus.registry import MatchRegistry
 from footballanalyst.generation import LLMProvider
-from footballanalyst.retrieval import HybridRetriever
+from footballanalyst.retrieval import HybridRetrieverProtocol
 
 
 def ask(
     query: str,
     match_id: int,
-    retriever: HybridRetriever | None = None,
+    retriever: HybridRetrieverProtocol | None = None,
     llm: LLMProvider | None = None,
     registry: MatchRegistry | None = None,
 ) -> Answer:

@@ -1,4 +1,5 @@
 from footballanalyst.ingestion.types import Chunk
+from footballanalyst.retrieval.types import RankedChunk, RetrievedContext
 from footballanalyst.store.vector_store import ScoredChunk, VectorStore
 
 
@@ -45,3 +46,18 @@ class FakeVectorStore(VectorStore):
         chunks = self.query_responses.get((collection, match_id), [])
         sorted_chunks = sorted(chunks, key=lambda sc: sc.score, reverse=True)
         return sorted_chunks[:top_k]
+
+
+class FakeHybridRetriever:
+    """Fake HybridRetriever for deterministic offline testing of ask().
+
+    Pre-configure ``context`` to control the returned RetrievedContext.
+    """
+
+    def __init__(self, context: RetrievedContext | None = None) -> None:
+        self.context = context if context is not None else RetrievedContext(chunks=[])
+        self.calls: list[tuple[str, int]] = []
+
+    def retrieve(self, query: str, match_id: int) -> RetrievedContext:
+        self.calls.append((query, match_id))
+        return self.context
