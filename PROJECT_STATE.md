@@ -8,12 +8,12 @@
 - **05: VectorStore + EmbeddingModel abstractions** (`05-vector-store-embedding.md`) - Completed: VectorStore ChromaDB wrapper with cosine similarity scoring, SentenceTransformer/Gemini/Fake embedding models and factory.
 - **06: Ingestion pipeline (`uv run ingest`)** (`06-ingestion-pipeline.md`) - Completed: IngestionPipeline orchestrating event and narrative fetching, chunking, embedding, vector store upserting, CLI entry point (`uv run ingest`), and structlog logging.
 - **07: EventRetriever + NarrativeRetriever** (`07-retrievers.md`) - Completed: EventRetriever and NarrativeRetriever sub-retrievers bound to ChromaDB collections with score-ordered query retrieval.
+- **08: HybridRetriever (RRF merge)** (`08-hybrid-retriever.md`) - Completed: HybridRetriever with RRF rank fusion, RetrievedContext/RankedChunk types, HybridRetrieverProtocol, and FakeHybridRetriever.
 
 ### Current/Next Ticket
-- **08: HybridRetriever (RRF merge)** (`08-hybrid-retriever.md`) - RRF rank fusion and unified context retrieval.
+- **09: LLMProvider abstraction + `ask()` happy path** (`09-llm-provider-ask.md`) - Groq/Gemini LLM integration and end-to-end prompt generation with citations.
 
 ### Remaining Tickets
-- **09: LLMProvider abstraction + `ask()` happy path** (`09-llm-provider-ask.md`) - Groq/Gemini LLM integration and end-to-end prompt generation with citations.
 - **10: Streamlit UI** (`10-streamlit-ui.md`) - Interactive tactical analysis web application.
 - **11: EvalHarness + golden Q&A pairs** (`11-eval-harness.md`) - Retrieval recall and grounding evaluation framework.
 - **12: Structured logging + observability** (`12-structured-logging.md`) - Comprehensive structlog instrumentation.
@@ -25,6 +25,7 @@ The system is structured into five core sub-packages:
 - **`ingestion`**: Fetches raw match data from StatsBomb and narrative sources (cached in `data/raw/`), transforming them into `EventSummary` and `NarrativeChunk` instances. Orchestrated by `IngestionPipeline` and `ingest` CLI.
 - **`embedding`**: Provides `EmbeddingModel` protocol implemented by `SentenceTransformerEmbedding`, `GeminiEmbedding`, and `FakeEmbeddingModel`, created via `EmbeddingModelFactory`.
 - **`store`**: `VectorStore` persists chunk embeddings in ChromaDB PersistentClient (`data/chroma/`) across `event_summaries` and `narrative_chunks` collections using cosine similarity.
+- **`retrieval`**: `HybridRetriever` is the single retrieval seam exposed to `ask()`. It fans out to `EventRetriever` and `NarrativeRetriever`, merges results via RRF (k=60, top-8), and returns a `RetrievedContext` (list of `RankedChunk`). `HybridRetrieverProtocol` is used for type-checking in `ask()`.
 - **`app`**: Application entrypoint exposing `ask()`, which currently guards against out-of-corpus query match IDs before invoking retrieval or LLM completion.
 
 ## Implemented Capabilities
@@ -35,6 +36,7 @@ The system is structured into five core sub-packages:
 - Pluggable embedding models (`SentenceTransformerEmbedding`, `GeminiEmbedding`, `FakeEmbeddingModel`) selectable by env var.
 - Disk-backed ChromaDB `VectorStore` supporting idempotent `upsert` and `query` filtered by `match_id` with cosine similarity scoring.
 - Offline end-to-end ingestion pipeline (`IngestionPipeline`) and CLI executable (`uv run ingest`) with `--match-ids` support, idempotent upserts, fault tolerance per match, and basic `structlog` progress logging.
+- `HybridRetriever` merging `EventRetriever` + `NarrativeRetriever` results via RRF rank fusion (k=60, top-8), returning a `RetrievedContext` with scored and ranked `RankedChunk` objects.
 
 ## Architectural Decisions
 - Use separate EventRetriever and NarrativeRetriever per collection, merged by RRF in HybridRetriever (see `docs/adr/0001-hybrid-retrieval-architecture.md`).
@@ -55,11 +57,13 @@ The system is structured into five core sub-packages:
 - **Environment variables**: `EMBEDDING_MODEL` (`local` | `gemini` | `fake`), `GOOGLE_API_KEY`, `GUARDIAN_API_KEY`, `GROQ_API_KEY`.
 - **Unit vs Integration Testing**: Offline unit tests skip ChromaDB/network using `FakeVectorStore` and `FakeEmbeddingModel`. Real ChromaDB tests are marked `@pytest.mark.integration`.
 - **Idempotency**: Chunks use deterministic SHA-256 IDs; vector store upsert is idempotent.
+- **RRF tiebreak**: HybridRetriever uses an event-first stable tiebreak (arbitrary, documented in class docstring, not a semantic preference).
 - **Deferred Code Smells & Technical Debt**: Tracked in `docs/deferred.md` for dedicated cleanup passes.
 
 
 ## Next Work
-- **Ticket 08: HybridRetriever (RRF merge)** (`08-hybrid-retriever.md`)
-  - **Dependencies**: Ticket 07 (EventRetriever + NarrativeRetriever).
-  - **Relevant ADRs / Architecture to check**: `docs/adr/0001-hybrid-retrieval-architecture.md`.
+- **Ticket 09: LLMProvider abstraction + `ask()` happy path** (`09-llm-provider-ask.md`)
+  - **Dependencies**: Ticket 08 (HybridRetriever + RetrievedContext).
+  - **Relevant ADRs / Architecture to check**: `docs/adr/0003-llm-provider-abstraction.md`.
+
 
