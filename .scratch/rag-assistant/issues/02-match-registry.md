@@ -1,6 +1,6 @@
 # 02: MatchRegistry + corpus config + out-of-corpus guard
 
-**Status:** ready-for-agent  
+**Status:** closed  
 **Blocked by:** 01
 
 ## What to build
@@ -51,10 +51,10 @@ This ticket delivers:
 
 ## Acceptance criteria
 
-- [ ] `corpus.toml` contains all 8 v1 match IDs with labels.
-- [ ] `MatchRegistry.contains(99999)` returns `False`.
-- [ ] `MatchRegistry.contains(3869685)` returns `True`.
-- [ ] `ask(query="test", match_id=99999, ...)` returns `Answer(out_of_corpus=True)` without
+- [x] `corpus.toml` contains all 8 v1 match IDs with labels.
+- [x] `MatchRegistry.contains(99999)` returns `False`.
+- [x] `MatchRegistry.contains(3869685)` returns `True`.
+- [x] `ask(query="test", match_id=99999, ...)` returns `Answer(out_of_corpus=True)` without
       calling the retriever or LLM.
-- [ ] Both tests pass under `uv run pytest tests/test_ask.py`.
-- [ ] `mypy` still exits 0 on `src/`.
+- [x] Both tests pass under `uv run pytest tests/test_ask.py`.
+- [x] `mypy` still exits 0 on `src/`.

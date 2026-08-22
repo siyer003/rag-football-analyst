@@ -1,6 +1,6 @@
 # 01: Project skeleton & tooling
 
-**Status:** ready-for-agent  
+**Status:** closed  
 **Blocked by:** None (can start immediately)
 
 ## What to build
@@ -26,11 +26,11 @@ cloning this repo should be able to run `uv sync`, `uv run pytest`, `uv run ruff
 
 ## Acceptance criteria
 
-- [ ] `uv sync` completes without error on a clean machine (no pre-installed packages assumed).
-- [ ] `uv run pytest` exits 0 (zero tests collected is fine at this stage).
-- [ ] `uv run ruff check .` exits 0.
-- [ ] `uv run mypy src/` exits 0 (no source code yet; stubs only).
-- [ ] CI workflow file exists and the workflow definition is valid YAML.
-- [ ] `src/footballanalyst/` package tree has all 8 sub-packages with `__init__.py`.
-- [ ] `config/corpus.toml` exists.
-- [ ] `data/chroma/` is gitignored.
+- [x] `uv sync` completes without error on a clean machine (no pre-installed packages assumed).
+- [x] `uv run pytest` exits 0 (zero tests collected is fine at this stage).
+- [x] `uv run ruff check .` exits 0.
+- [x] `uv run mypy src/` exits 0 (no source code yet; stubs only).
+- [x] CI workflow file exists and the workflow definition is valid YAML.
+- [x] `src/footballanalyst/` package tree has all 8 sub-packages with `__init__.py`.
+- [x] `config/corpus.toml` exists.
+- [x] `data/chroma/` is gitignored.
