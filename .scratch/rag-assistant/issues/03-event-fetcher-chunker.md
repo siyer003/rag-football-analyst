@@ -1,6 +1,6 @@
 # 03: StatsBomb event fetcher + EventSummary chunker
 
-**Status:** ready-for-agent  
+**Status:** closed  
 **Blocked by:** 01
 
 ## What to build
@@ -44,9 +44,9 @@ This ticket delivers:
 
 ## Acceptance criteria
 
-- [ ] `StatsBombFetcher` writes to `data/raw/<match_id>/events.json` on first call; reads from it
+- [x] `StatsBombFetcher` writes to `data/raw/<match_id>/events.json` on first call; reads from it
       on subsequent calls (no network on cache hit).
-- [ ] `EventSummaryChunker` produces at least 6 distinct `window` values for a real match.
-- [ ] All `EventSummary.chunk_id` values are unique within a match.
-- [ ] All tests pass offline using fixture data (no `statsbombpy` network calls in test suite).
-- [ ] `mypy` exits 0.
+- [x] `EventSummaryChunker` produces at least 6 distinct `window` values for a real match.
+- [x] All `EventSummary.chunk_id` values are unique within a match.
+- [x] All tests pass offline using fixture data (no `statsbombpy` network calls in test suite).
+- [x] `mypy` exits 0.

@@ -15,3 +15,5 @@ scratch/
 # Data stores
 data/chroma/*
 !data/chroma/.gitkeep
+data/raw/*
+!data/raw/.gitkeep
