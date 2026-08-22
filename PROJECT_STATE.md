@@ -7,12 +7,12 @@
 - **04: Narrative fetcher + NarrativeChunk chunker** (`04-narrative-fetcher-chunker.md`) - Completed: Disk-cached Guardian/Wikipedia/StatsBomb narrative fetcher and sliding-window paragraph chunker.
 - **05: VectorStore + EmbeddingModel abstractions** (`05-vector-store-embedding.md`) - Completed: VectorStore ChromaDB wrapper with cosine similarity scoring, SentenceTransformer/Gemini/Fake embedding models and factory.
 - **06: Ingestion pipeline (`uv run ingest`)** (`06-ingestion-pipeline.md`) - Completed: IngestionPipeline orchestrating event and narrative fetching, chunking, embedding, vector store upserting, CLI entry point (`uv run ingest`), and structlog logging.
+- **07: EventRetriever + NarrativeRetriever** (`07-retrievers.md`) - Completed: EventRetriever and NarrativeRetriever sub-retrievers bound to ChromaDB collections with score-ordered query retrieval.
 
 ### Current/Next Ticket
-- **07: EventRetriever + NarrativeRetriever** (`07-retrievers.md`) - Sub-retrievers for ChromaDB collections.
+- **08: HybridRetriever (RRF merge)** (`08-hybrid-retriever.md`) - RRF rank fusion and unified context retrieval.
 
 ### Remaining Tickets
-- **08: HybridRetriever (RRF merge)** (`08-hybrid-retriever.md`) - RRF rank fusion and unified context retrieval.
 - **09: LLMProvider abstraction + `ask()` happy path** (`09-llm-provider-ask.md`) - Groq/Gemini LLM integration and end-to-end prompt generation with citations.
 - **10: Streamlit UI** (`10-streamlit-ui.md`) - Interactive tactical analysis web application.
 - **11: EvalHarness + golden Q&A pairs** (`11-eval-harness.md`) - Retrieval recall and grounding evaluation framework.
@@ -59,7 +59,7 @@ The system is structured into five core sub-packages:
 
 
 ## Next Work
-- **Ticket 07: EventRetriever + NarrativeRetriever** (`07-retrievers.md`)
-  - **Dependencies**: Ticket 05 (VectorStore), Ticket 06 (Ingestion).
-  - **Relevant ADRs / Architecture to check**: `docs/adr/0001-hybrid-retrieval-architecture.md`, `docs/adr/0002-chromadb-vector-store.md`.
+- **Ticket 08: HybridRetriever (RRF merge)** (`08-hybrid-retriever.md`)
+  - **Dependencies**: Ticket 07 (EventRetriever + NarrativeRetriever).
+  - **Relevant ADRs / Architecture to check**: `docs/adr/0001-hybrid-retrieval-architecture.md`.
 

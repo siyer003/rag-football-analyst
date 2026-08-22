@@ -42,4 +42,6 @@ class FakeVectorStore(VectorStore):
         match_id: int,
         top_k: int = 5,
     ) -> list[ScoredChunk]:
-        return self.query_responses.get((collection, match_id), [])[:top_k]
+        chunks = self.query_responses.get((collection, match_id), [])
+        sorted_chunks = sorted(chunks, key=lambda sc: sc.score, reverse=True)
+        return sorted_chunks[:top_k]
