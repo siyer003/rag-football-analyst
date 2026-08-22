@@ -21,7 +21,7 @@ class _BaseVectorStoreRetriever(ABC):
         match_id: int,
         top_k: int = 5,
     ) -> list[ScoredChunk]:
-        """Retrieve top_k ScoredChunk objects for the given match_id and query_embedding."""
+        """Retrieve top_k ScoredChunk objects for given match_id and query_embedding."""
         return self._vector_store.query(
             embedding=query_embedding,
             collection=self.collection_name,

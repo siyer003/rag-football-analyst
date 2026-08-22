@@ -1,5 +1,3 @@
-import pytest
-
 from footballanalyst.ingestion.types import NarrativeChunk
 from footballanalyst.retrieval.narrative_retriever import NarrativeRetriever
 from footballanalyst.store.vector_store import ScoredChunk
@@ -49,8 +47,12 @@ def test_narrative_retriever_filters_by_match_id() -> None:
         chunk_id="2_narrative_1",
         chunk_type="narrative",
     )
-    store.query_responses[("narrative_chunks", 1)] = [ScoredChunk(chunk=m1_chunk, score=0.9)]
-    store.query_responses[("narrative_chunks", 2)] = [ScoredChunk(chunk=m2_chunk, score=0.85)]
+    store.query_responses[("narrative_chunks", 1)] = [
+        ScoredChunk(chunk=m1_chunk, score=0.9)
+    ]
+    store.query_responses[("narrative_chunks", 2)] = [
+        ScoredChunk(chunk=m2_chunk, score=0.85)
+    ]
 
     retriever = NarrativeRetriever(vector_store=store)
     results = retriever.retrieve(query_embedding=[0.1] * 384, match_id=1, top_k=5)
@@ -106,4 +108,8 @@ def test_narrative_retriever_returns_chunks_ordered_by_score_descending() -> Non
     results = retriever.retrieve(query_embedding=[0.1] * 384, match_id=1, top_k=5)
 
     assert [r.score for r in results] == [0.95, 0.7, 0.4]
-    assert [r.chunk.chunk_id for r in results] == ["1_narrative_2", "1_narrative_3", "1_narrative_1"]
+    assert [r.chunk.chunk_id for r in results] == [
+        "1_narrative_2",
+        "1_narrative_3",
+        "1_narrative_1",
+    ]

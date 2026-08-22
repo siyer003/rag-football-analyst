@@ -59,12 +59,8 @@ def ask(
         )
 
     # Happy path: retrieve → prompt → LLM → citations
-    assert retriever is not None, (
-        "retriever must be provided for in-corpus match IDs"
-    )
-    assert llm is not None, (
-        "llm must be provided for in-corpus match IDs"
-    )
+    assert retriever is not None, "retriever must be provided for in-corpus match IDs"
+    assert llm is not None, "llm must be provided for in-corpus match IDs"
 
     context = retriever.retrieve(query, match_id)
     system_prompt, user_prompt = build_prompt(query, context)

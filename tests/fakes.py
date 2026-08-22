@@ -1,5 +1,5 @@
 from footballanalyst.ingestion.types import Chunk
-from footballanalyst.retrieval.types import RankedChunk, RetrievedContext
+from footballanalyst.retrieval.types import RetrievedContext
 from footballanalyst.store.vector_store import ScoredChunk, VectorStore
 
 
@@ -17,7 +17,6 @@ class FakeLLMProvider:
 
     def complete(self, system: str, user: str) -> str:  # noqa: ARG002
         return self.CANNED_RESPONSE
-
 
 
 class FakeEmbeddingModel:

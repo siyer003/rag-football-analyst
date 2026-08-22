@@ -34,9 +34,7 @@ def build_prompt(query: str, context: RetrievedContext) -> tuple[str, str]:
     chunk_lines: list[str] = []
     for i, ranked in enumerate(context.chunks, start=1):
         chunk = ranked.chunk
-        chunk_lines.append(
-            f"[{i}] (source: {chunk.source})\n{chunk.text}"
-        )
+        chunk_lines.append(f"[{i}] (source: {chunk.source})\n{chunk.text}")
 
     context_block = "\n\n".join(chunk_lines) if chunk_lines else "(no context provided)"
     user_prompt = f"{context_block}\n\nQuestion: {query}"

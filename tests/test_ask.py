@@ -3,6 +3,9 @@ import pytest
 from footballanalyst.app.ask import ask
 from footballanalyst.app.types import Answer
 from footballanalyst.corpus.registry import MatchRegistry
+from footballanalyst.ingestion.types import EventSummary
+from footballanalyst.retrieval.types import RankedChunk, RetrievedContext
+from tests.fakes import FakeHybridRetriever, FakeLLMProvider
 
 V1_MATCH_IDS = [
     3869685,  # WC 2022 Final
@@ -57,10 +60,6 @@ def test_ask_returns_out_of_corpus_for_unknown_match_id() -> None:
 # ---------------------------------------------------------------------------
 # Happy path tests (Ticket 09)
 # ---------------------------------------------------------------------------
-
-from footballanalyst.ingestion.types import EventSummary
-from footballanalyst.retrieval.types import RankedChunk, RetrievedContext
-from tests.fakes import FakeHybridRetriever, FakeLLMProvider
 
 
 def _make_context() -> RetrievedContext:
@@ -131,4 +130,3 @@ def test_ask_does_not_call_llm_for_out_of_corpus_match() -> None:
         registry=MatchRegistry.load(),
     )
     assert TrackingFakeLLM.called is False
-

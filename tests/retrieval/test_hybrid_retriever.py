@@ -1,4 +1,5 @@
 """Tests for HybridRetriever — the single retrieval seam exposed to ask()."""
+
 import pytest
 
 from footballanalyst.ingestion.types import EventSummary, NarrativeChunk
@@ -6,7 +7,6 @@ from footballanalyst.retrieval.hybrid_retriever import HybridRetriever
 from footballanalyst.retrieval.types import RetrievedContext
 from footballanalyst.store.vector_store import ScoredChunk
 from tests.fakes import FakeEmbeddingModel
-
 
 # ---------------------------------------------------------------------------
 # Fake sub-retrievers — injected via constructor; test the HybridRetriever

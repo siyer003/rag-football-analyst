@@ -1,11 +1,13 @@
-"""Tests for the generation package: prompt assembly, citation parsing, and providers."""
+"""Tests for the generation package: prompt assembly, citations, providers."""
 
 import pytest
 
+from footballanalyst.generation.citations import parse_citations
+from footballanalyst.generation.factory import LLMProviderFactory
 from footballanalyst.generation.prompt import build_prompt
 from footballanalyst.ingestion.types import EventSummary, NarrativeChunk
 from footballanalyst.retrieval.types import RankedChunk, RetrievedContext
-
+from tests.fakes import FakeLLMProvider
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -61,9 +63,7 @@ def test_build_prompt_user_prompt_contains_query() -> None:
 
 
 def test_build_prompt_user_prompt_numbers_chunks_from_1() -> None:
-    context = RetrievedContext(
-        chunks=[make_event_chunk(1), make_event_chunk(2)]
-    )
+    context = RetrievedContext(chunks=[make_event_chunk(1), make_event_chunk(2)])
     _, user = build_prompt("Query", context)
     assert "[1]" in user
     assert "[2]" in user
@@ -98,11 +98,9 @@ def test_build_prompt_empty_context_still_returns_strings() -> None:
 # Cycle 2: parse_citations
 # ---------------------------------------------------------------------------
 
-from footballanalyst.app.types import ChunkRef
-from footballanalyst.generation.citations import parse_citations
-
 
 def test_parse_citations_extracts_valid_chunk_ref() -> None:
+
     context = RetrievedContext(chunks=[make_event_chunk(1), make_narrative_chunk(1)])
     refs = parse_citations("Liverpool pressed high [1] and held shape [2].", context)
     assert len(refs) == 2
@@ -149,13 +147,9 @@ def test_parse_citations_empty_context_returns_empty_list() -> None:
 # Cycle 3: FakeLLMProvider + LLMProviderFactory
 # ---------------------------------------------------------------------------
 
-import os
-
-from tests.fakes import FakeLLMProvider
-from footballanalyst.generation.factory import LLMProviderFactory
-
 
 def test_fake_llm_provider_complete_returns_non_empty_string() -> None:
+
     llm = FakeLLMProvider()
     result = llm.complete(system="sys", user="usr")
     assert isinstance(result, str) and len(result) > 0
@@ -183,11 +177,11 @@ def test_llm_provider_factory_returns_gemini_when_configured(
     assert type(provider).__name__ == "GeminiProvider"
 
 
-def test_groq_provider_raises_on_missing_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_groq_provider_raises_on_missing_api_key(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     from footballanalyst.generation.groq_provider import GroqProvider, LLMConfigError
 
     monkeypatch.delenv("GROQ_API_KEY", raising=False)
     with pytest.raises(LLMConfigError, match="GROQ_API_KEY"):
         GroqProvider()
-
-
