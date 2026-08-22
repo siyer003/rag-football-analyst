@@ -1,6 +1,6 @@
 # 05: VectorStore + EmbeddingModel abstractions
 
-**Status:** ready-for-agent  
+**Status:** closed  
 **Blocked by:** 01
 
 ## What to build
@@ -63,10 +63,11 @@ This ticket delivers:
 
 ## Acceptance criteria
 
-- [ ] `FakeEmbeddingModel.embed(["test"])` returns `[[0.0] * 384]` without loading any model.
-- [ ] `SentenceTransformerEmbedding.embed(["hello"])` returns a list of 384 floats.
-- [ ] `VectorStore.upsert` called twice with the same chunk IDs does not create duplicates.
-- [ ] `VectorStore.query` with a `match_id` filter only returns chunks for that match.
-- [ ] Integration tests pass (`uv run pytest -m integration`).
-- [ ] Unit tests in `tests/store/` that don't touch real ChromaDB pass without `INTEGRATION=1`.
-- [ ] `mypy` exits 0.
+- [x] `FakeEmbeddingModel.embed(["test"])` returns `[[0.0] * 384]` without loading any model.
+- [x] `SentenceTransformerEmbedding.embed(["hello"])` returns a list of 384 floats.
+- [x] `VectorStore.upsert` called twice with the same chunk IDs does not create duplicates.
+- [x] `VectorStore.query` with a `match_id` filter only returns chunks for that match.
+- [x] Integration tests pass (`uv run pytest -m integration`).
+- [x] Unit tests in `tests/store/` that don't touch real ChromaDB pass without `INTEGRATION=1`.
+- [x] `mypy` exits 0.
+

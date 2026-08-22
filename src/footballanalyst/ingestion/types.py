@@ -50,3 +50,7 @@ class NarrativeChunk:
     text: str
     chunk_id: str
     chunk_type: str = "narrative"
+
+
+Chunk = EventSummary | NarrativeChunk
+
