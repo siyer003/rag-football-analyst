@@ -105,7 +105,10 @@ class NarrativeFetcher:
             logger.info("GUARDIAN_API_KEY not set; skipping Guardian fetch.")
             return None
 
-        query = f"{match_label} {competition}".strip()
+        import re
+
+        raw_query = f"{match_label} {competition}".strip()
+        query = re.sub(r"[^\w\s]", " ", raw_query).strip()
         params = {
             "q": query,
             "show-fields": "bodyText,webUrl",
