@@ -219,9 +219,7 @@ class EventSummaryChunker:
             carrier_prog_dist.items(), key=lambda x: x[1], reverse=True
         )[:5]
 
-        lines = [
-            f"Top Ball Carriers by Progressive Distance for Match {match_id}:"
-        ]
+        lines = [f"Top Ball Carriers by Progressive Distance for Match {match_id}:"]
         if top_carriers:
             for player, total_dist in top_carriers:
                 count = carrier_count.get(player, 0)
@@ -273,8 +271,7 @@ class EventSummaryChunker:
             tot_xg = team_xg.get(team, 0.0)
             goals = team_goals.get(team, 0)
             lines.append(
-                f"- {team}: {goals} goals from {s_count} shots "
-                f"({tot_xg:.2f} total xG)."
+                f"- {team}: {goals} goals from {s_count} shots ({tot_xg:.2f} total xG)."
             )
 
         if shots:

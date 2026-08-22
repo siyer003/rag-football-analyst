@@ -1,7 +1,7 @@
 # 04: Narrative fetcher + NarrativeChunk chunker
 
-**Status:** ready-for-agent  
-**Blocked by:** 01
+**Status:** closed  
+**Blocked by:** 01, 02
 
 ## What to build
 
@@ -46,11 +46,12 @@ This ticket delivers:
 
 ## Acceptance criteria
 
-- [ ] `NarrativeFetcher` skips Guardian gracefully when `GUARDIAN_API_KEY` is not set, without
+- [x] `NarrativeFetcher` skips Guardian gracefully when `GUARDIAN_API_KEY` is not set, without
       raising an exception.
-- [ ] On second run, fetcher reads from `data/raw/<match_id>/<source>.txt` without making HTTP
+- [x] On second run, fetcher reads from `data/raw/<match_id>/<source>.txt` without making HTTP
       requests.
-- [ ] `NarrativeChunker` produces chunks of ≤ 300 tokens each.
-- [ ] All `NarrativeChunk.chunk_id` values are unique within a match.
-- [ ] All tests pass offline (no real HTTP calls in test suite).
-- [ ] `mypy` exits 0.
+- [x] `NarrativeChunker` produces chunks of ≤ 300 tokens each.
+- [x] All `NarrativeChunk.chunk_id` values are unique within a match.
+- [x] All tests pass offline (no real HTTP calls in test suite).
+- [x] `mypy` exits 0.
+

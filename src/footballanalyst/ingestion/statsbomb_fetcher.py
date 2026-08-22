@@ -6,9 +6,7 @@ import httpx
 
 from footballanalyst.ingestion.types import RawMatchData
 
-OPEN_DATA_EVENTS_URL = (
-    "https://raw.githubusercontent.com/statsbomb/open-data/master/data/events/{match_id}.json"
-)
+OPEN_DATA_EVENTS_URL = "https://raw.githubusercontent.com/statsbomb/open-data/master/data/events/{match_id}.json"
 
 
 class StatsBombFetcher:
