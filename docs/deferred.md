@@ -1,0 +1,44 @@
+# Deferred Smells & Technical Debt
+
+A persistent log of code smells, architectural debt, and follow-up items flagged during ticket reviews that have been deliberately deferred for future refactoring passes.
+
+---
+
+## `src/footballanalyst/embedding/factory.py`
+
+- **Middle Man / Speculative Generality**: `get_embedding_model()` is a pure delegator function to `EmbeddingModelFactory.create()`, introducing redundant API surface. *(Flagged during Ticket 05 review)*
+
+---
+
+## `src/footballanalyst/embedding/sentence_transformer.py`
+
+- **Dimension Mismatch / Unlisted Model Fallback**: `SentenceTransformerEmbedding` falls back to default 384 dimensions for unlisted custom model names if `.dimension` is accessed before `.embed()` lazy loads the model weights. *(Flagged during Ticket 05 review)*
+
+---
+
+## `src/footballanalyst/ingestion/event_chunker.py`
+
+- **Duplicated Dictionary Traversal**: Deep nested dictionary access (`e.get("type", {}).get("name")`) is repeated across all 6 analytical window builder methods. *(Flagged during Ticket 03 review)*
+- **Divergent Change**: `EventSummaryChunker` combines event parsing, metric calculations, and prose formatting across 6 distinct lenses in a single class. *(Flagged during Ticket 03 review)*
+
+---
+
+## `src/footballanalyst/ingestion/statsbomb_fetcher.py`
+
+- **Feature Envy**: `StatsBombFetcher._extract_metadata()` performs domain-level event analysis inside the network/disk fetcher class. *(Flagged during Ticket 03 review)*
+
+---
+
+## `src/footballanalyst/store/vector_store.py`
+
+- **Repeated Switches / Type Checking**: Repeated `chunk_type == "event_summary"` and `isinstance()` branching across collection selection, metadata serialization, and chunk deserialization. *(Flagged during Ticket 05 review)*
+- **Primitive Obsession / Data Clumps**: `VectorStore.upsert` accepts parallel lists `chunks: list[Chunk]` and `embeddings: list[list[float]]`, requiring explicit length matching checks. *(Flagged during Ticket 05 review)*
+- **Duplicated Code**: Literal repetition of collection dictionary structures (`ids`, `documents`, `metadatas`, `embeddings`) for both `event_summaries` and `narrative_chunks`. *(Flagged during Ticket 05 review)*
+- **Divergent Change**: `VectorStore` is modified both when ChromaDB storage configuration changes and when `Chunk` schema metadata fields change. *(Flagged during Ticket 05 review)*
+
+---
+
+## `tests/fakes.py`
+
+- **Refused Bequest**: `FakeVectorStore` inherits from concrete `VectorStore` to satisfy mypy type checking without invoking `super().__init__()` to avoid ChromaDB client initialization. Protocol abstraction for `VectorStore` deferred to future store refactoring pass. *(Flagged during Ticket 06 review)*
+

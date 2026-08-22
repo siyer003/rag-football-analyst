@@ -70,7 +70,6 @@ def test_fake_vector_store_query_filters_by_match_id() -> None:
     assert res_102[0].chunk.match_id == 102
 
 
-
 @pytest.mark.integration
 def test_vector_store_empty_upsert_does_not_raise(tmp_path: Path) -> None:
     store = VectorStore(persist_directory=tmp_path)
@@ -194,4 +193,7 @@ def test_narrative_chunk_upsert_and_query(tmp_path: Path) -> None:
     assert isinstance(results[0].chunk, NarrativeChunk)
     assert results[0].chunk.chunk_id == "nc_3869685_01"
     assert results[0].chunk.source == "guardian"
-    assert results[0].chunk.url == "https://theguardian.com/football/2022/dec/18/world-cup-final"
+    assert (
+        results[0].chunk.url
+        == "https://theguardian.com/football/2022/dec/18/world-cup-final"
+    )

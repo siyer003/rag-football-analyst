@@ -61,11 +61,9 @@ def test_sentence_transformer_embedding_custom_model_dimension() -> None:
     assert st._model is None
 
 
-
 def test_sentence_transformer_embedding_empty_list() -> None:
     model = SentenceTransformerEmbedding()
     assert model.embed([]) == []
-
 
 
 def test_gemini_embedding_raises_without_api_key() -> None:

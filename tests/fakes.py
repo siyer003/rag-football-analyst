@@ -1,7 +1,5 @@
-"""Test fakes and stubs for external interfaces."""
-
 from footballanalyst.ingestion.types import Chunk
-from footballanalyst.store.vector_store import ScoredChunk
+from footballanalyst.store.vector_store import ScoredChunk, VectorStore
 
 
 class FakeLLMProvider:
@@ -24,15 +22,18 @@ class FakeEmbeddingModel:
         return self._dimension
 
 
-class FakeVectorStore:
+class FakeVectorStore(VectorStore):
     """Fake vector store for deterministic offline testing."""
 
     def __init__(self) -> None:
         self.upserted_chunks: list[tuple[list[Chunk], list[list[float]]]] = []
         self.query_responses: dict[tuple[str, int], list[ScoredChunk]] = {}
+        self.chunks_by_id: dict[str, Chunk] = {}
 
     def upsert(self, chunks: list[Chunk], embeddings: list[list[float]]) -> None:
         self.upserted_chunks.append((chunks, embeddings))
+        for chunk in chunks:
+            self.chunks_by_id[chunk.chunk_id] = chunk
 
     def query(
         self,

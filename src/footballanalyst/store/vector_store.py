@@ -153,4 +153,3 @@ class VectorStore:
             )
 
         return scored_chunks
-

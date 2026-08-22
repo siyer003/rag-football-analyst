@@ -21,6 +21,8 @@ dependencies = [
 
 [project.scripts]
 footballanalyst = "footballanalyst.app:main"
+ingest = "footballanalyst.ingestion.cli:main"
+
 
 [build-system]
 requires = ["uv_build>=0.12.3,<0.13.0"]

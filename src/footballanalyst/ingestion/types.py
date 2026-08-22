@@ -53,4 +53,3 @@ class NarrativeChunk:
 
 
 Chunk = EventSummary | NarrativeChunk
-
