@@ -25,7 +25,7 @@ data/raw/*
 PROJECT_STATE.md
 AGENTS.md
 .agents/
+.claude/
 .scratch/
-docs/adr/
-docs/agents/
-docs/session-notes/
+skills-lock.json
+docs/
