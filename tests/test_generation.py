@@ -87,6 +87,16 @@ def test_build_prompt_system_prompt_instructs_not_enough_info() -> None:
     assert "not enough information" in system.lower()
 
 
+def test_build_prompt_system_prompt_forbids_inferring_event_manner_details() -> None:
+    context = RetrievedContext(chunks=[make_event_chunk(1)])
+    system, _ = build_prompt("Query", context)
+    assert (
+        "header" in system
+        or "method/manner" in system
+        or "how an event occurred" in system
+    )
+
+
 def test_build_prompt_empty_context_still_returns_strings() -> None:
     context = RetrievedContext(chunks=[])
     system, user = build_prompt("Query", context)

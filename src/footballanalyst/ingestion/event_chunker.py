@@ -15,7 +15,7 @@ class EventSummaryChunker:
         match_id = raw_data.match_id
         events = raw_data.events
 
-        return [
+        chunks = [
             self._build_pressing_summary(match_id, events),
             self._build_xg_by_phase_summary(match_id, events),
             self._build_substitutions_summary(match_id, events),
@@ -23,6 +23,10 @@ class EventSummaryChunker:
             self._build_shot_map_summary(match_id, events),
             self._build_key_passes_summary(match_id, events),
         ]
+        shootout_chunk = self._build_penalty_shootout_summary(match_id, events)
+        if shootout_chunk:
+            chunks.append(shootout_chunk)
+        return chunks
 
     def _generate_chunk_id(self, match_id: int, window: str) -> str:
         raw_key = f"{match_id}_event_summary_{window}"
@@ -47,6 +51,9 @@ class EventSummaryChunker:
 
         for e in events:
             period = e.get("period", 1)
+            if period > 4:
+                continue
+
             type_name = e.get("type", {}).get("name")
             team_name = e.get("team", {}).get("name")
             location = e.get("location", [0.0, 0.0])
@@ -115,7 +122,8 @@ class EventSummaryChunker:
         shots_by_pattern: dict[str, int] = {}
 
         for e in events:
-            if e.get("type", {}).get("name") == "Shot":
+            period = e.get("period", 1)
+            if period <= 4 and e.get("type", {}).get("name") == "Shot":
                 pattern = e.get("play_pattern", {}).get("name", "Regular Play")
                 shot_info = e.get("shot", {})
                 xg = float(shot_info.get("statsbomb_xg", 0.0))
@@ -245,14 +253,31 @@ class EventSummaryChunker:
         team_xg: dict[str, float] = {}
         team_goals: dict[str, int] = {}
 
+        p5_shots = [
+            e
+            for e in events
+            if e.get("period") == 5 and e.get("type", {}).get("name") == "Shot"
+        ]
+
         for e in events:
-            if e.get("type", {}).get("name") == "Shot":
+            period = e.get("period", 1)
+            if period <= 4 and e.get("type", {}).get("name") == "Shot":
                 team = e.get("team", {}).get("name", "Unknown")
                 minute = e.get("minute", 0)
                 player = e.get("player", {}).get("name", "Unknown")
                 shot_info = e.get("shot", {})
                 outcome = shot_info.get("outcome", {}).get("name", "Unknown")
                 xg = float(shot_info.get("statsbomb_xg", 0.0))
+
+                shot_type = shot_info.get("type", {}).get("name")
+                body_part = shot_info.get("body_part", {}).get("name")
+
+                details = [outcome]
+                if shot_type:
+                    details.append(shot_type)
+                if body_part:
+                    details.append(body_part)
+                details_str = ", ".join(details)
 
                 team_shots[team] = team_shots.get(team, 0) + 1
                 team_xg[team] = team_xg.get(team, 0.0) + xg
@@ -261,7 +286,7 @@ class EventSummaryChunker:
 
                 if outcome == "Goal" or xg >= 0.15:
                     shots.append(
-                        f"- Minute {minute}': {player} ({team}) shot [{outcome}], "
+                        f"- Minute {minute}': {player} ({team}) shot [{details_str}], "
                         f"xG: {xg:.2f}"
                     )
 
@@ -271,12 +296,125 @@ class EventSummaryChunker:
             tot_xg = team_xg.get(team, 0.0)
             goals = team_goals.get(team, 0)
             lines.append(
-                f"- {team}: {goals} goals from {s_count} shots ({tot_xg:.2f} total xG)."
+                f"- {team}: {goals} goals from {s_count} shots ({tot_xg:.2f} total xG) "
+                f"in regulation/extra time."
             )
+
+        if p5_shots:
+            pen_goals: dict[str, int] = {}
+            for s in p5_shots:
+                if s.get("shot", {}).get("outcome", {}).get("name") == "Goal":
+                    tm = s.get("team", {}).get("name", "Unknown")
+                    pen_goals[tm] = pen_goals.get(tm, 0) + 1
+            teams_p5 = list(
+                dict.fromkeys(
+                    [e.get("team", {}).get("name", "Unknown") for e in p5_shots]
+                )
+            )
+            t1 = teams_p5[0] if len(teams_p5) >= 1 else "Team 1"
+            t2 = teams_p5[1] if len(teams_p5) >= 2 else "Team 2"
+            p1 = pen_goals.get(t1, 0)
+            p2 = pen_goals.get(t2, 0)
+            reg1 = team_goals.get(t1, 0)
+            reg2 = team_goals.get(t2, 0)
+            if p1 > p2:
+                w_str = (
+                    f"{t1} won {p1} - {p2} on penalties "
+                    f"after a {reg1} - {reg2} draw (a.e.t.)"
+                )
+            elif p2 > p1:
+                w_str = (
+                    f"{t2} won {p2} - {p1} on penalties "
+                    f"after a {reg2} - {reg1} draw (a.e.t.)"
+                )
+            else:
+                w_str = (
+                    f"Penalty shootout tied {p1} - {p2} after a {reg1} - {reg2} draw"
+                )
+            lines.append(f"Match Outcome: {w_str}.")
 
         if shots:
             lines.append("Key Shot Events:")
             lines.extend(shots[:10])
+
+        text = "\n".join(lines)
+        chunk_id = self._generate_chunk_id(match_id, window)
+        return EventSummary(
+            match_id=match_id, window=window, text=text, chunk_id=chunk_id
+        )
+
+    def _build_penalty_shootout_summary(
+        self, match_id: int, events: list[dict[str, Any]]
+    ) -> EventSummary | None:
+        p5_shots = [
+            e
+            for e in events
+            if e.get("period") == 5 and e.get("type", {}).get("name") == "Shot"
+        ]
+        if not p5_shots:
+            return None
+
+        window = "penalty_shootout"
+        p1_4_goals: dict[str, int] = {}
+        for e in events:
+            if (
+                e.get("period", 1) <= 4
+                and e.get("type", {}).get("name") == "Shot"
+                and e.get("shot", {}).get("outcome", {}).get("name") == "Goal"
+            ):
+                team = e.get("team", {}).get("name", "Unknown")
+                p1_4_goals[team] = p1_4_goals.get(team, 0) + 1
+
+        team_pen_goals: dict[str, int] = {}
+        kicks: list[str] = []
+
+        for idx, s in enumerate(p5_shots, start=1):
+            team = s.get("team", {}).get("name", "Unknown")
+            player = s.get("player", {}).get("name", "Unknown")
+            shot_info = s.get("shot", {})
+            outcome = shot_info.get("outcome", {}).get("name", "Unknown")
+
+            is_goal = outcome == "Goal"
+            if is_goal:
+                team_pen_goals[team] = team_pen_goals.get(team, 0) + 1
+                status_str = "Scored [Goal]"
+            else:
+                status_str = f"Missed [{outcome}]"
+
+            kicks.append(f"- Kick {idx}: {player} ({team}) - {status_str}")
+
+        teams = list(
+            dict.fromkeys([e.get("team", {}).get("name", "Unknown") for e in p5_shots])
+        )
+        team1 = teams[0] if len(teams) >= 1 else "Team 1"
+        team2 = teams[1] if len(teams) >= 2 else "Team 2"
+        t1_pens = team_pen_goals.get(team1, 0)
+        t2_pens = team_pen_goals.get(team2, 0)
+        t1_reg = p1_4_goals.get(team1, 0)
+        t2_reg = p1_4_goals.get(team2, 0)
+
+        if t1_pens > t2_pens:
+            outcome_str = (
+                f"{team1} won {t1_pens} - {t2_pens} on penalties "
+                f"after a {t1_reg} - {t2_reg} draw (a.e.t.)"
+            )
+        elif t2_pens > t1_pens:
+            outcome_str = (
+                f"{team2} won {t2_pens} - {t1_pens} on penalties "
+                f"after a {t2_reg} - {t1_reg} draw (a.e.t.)"
+            )
+        else:
+            outcome_str = (
+                f"Penalty shootout tied {t1_pens} - {t2_pens} "
+                f"after a {t1_reg} - {t2_reg} draw"
+            )
+
+        lines = [
+            f"Penalty Shootout Results for Match {match_id}:",
+            f"Match Outcome: {outcome_str}.",
+            "Kick Sequence:",
+            *kicks,
+        ]
 
         text = "\n".join(lines)
         chunk_id = self._generate_chunk_id(match_id, window)

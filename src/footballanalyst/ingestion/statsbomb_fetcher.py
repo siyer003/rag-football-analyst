@@ -27,11 +27,8 @@ class StatsBombFetcher:
 
         if events_file.is_file():
             events = json.loads(events_file.read_text(encoding="utf-8"))
-            metadata: dict[str, Any] = {}
-            if metadata_file.is_file():
-                metadata = json.loads(metadata_file.read_text(encoding="utf-8"))
-            else:
-                metadata = self._extract_metadata(match_id, events)
+            metadata = self._extract_metadata(match_id, events)
+            metadata_file.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
             return RawMatchData(match_id=match_id, events=events, metadata=metadata)
 
         # Cache miss — fetch from remote repository
@@ -83,18 +80,30 @@ class StatsBombFetcher:
 
         home_goals = 0
         away_goals = 0
+        home_pens = 0
+        away_pens = 0
+        has_shootout = False
+
         for e in events:
+            period = e.get("period", 1)
             if (
                 e.get("type", {}).get("name") == "Shot"
                 and e.get("shot", {}).get("outcome", {}).get("name") == "Goal"
             ):
                 team_name = e.get("team", {}).get("name")
-                if team_name == home_team:
-                    home_goals += 1
-                elif team_name == away_team:
-                    away_goals += 1
+                if period <= 4:
+                    if team_name == home_team:
+                        home_goals += 1
+                    elif team_name == away_team:
+                        away_goals += 1
+                elif period == 5:
+                    has_shootout = True
+                    if team_name == home_team:
+                        home_pens += 1
+                    elif team_name == away_team:
+                        away_pens += 1
 
-        return {
+        metadata: dict[str, Any] = {
             "match_id": match_id,
             "home_team": home_team,
             "away_team": away_team,
@@ -104,3 +113,26 @@ class StatsBombFetcher:
             "lineups": lineups,
             "managers": {home_team: "N/A", away_team: "N/A"},
         }
+
+        if has_shootout:
+            metadata["shootout_score"] = {home_team: home_pens, away_team: away_pens}
+            if home_pens > away_pens:
+                winner = home_team
+            elif away_pens > home_pens:
+                winner = away_team
+            else:
+                winner = "Tied"
+            metadata["shootout_winner"] = winner
+            metadata["match_winner"] = winner
+            metadata["win_type"] = "penalties"
+        elif home_goals > away_goals:
+            metadata["match_winner"] = home_team
+            metadata["win_type"] = "regulation_or_extra_time"
+        elif away_goals > home_goals:
+            metadata["match_winner"] = away_team
+            metadata["win_type"] = "regulation_or_extra_time"
+        else:
+            metadata["match_winner"] = "Draw"
+            metadata["win_type"] = "draw"
+
+        return metadata

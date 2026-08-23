@@ -12,6 +12,9 @@ Rules:
 - If the context does not contain enough information to answer confidently, \
 respond with: "not enough information in the provided context."
 - Do not invent facts or draw on knowledge outside the provided chunks.
+- Never state how an event occurred (e.g. header, volley, penalty, foot used, \
+or any other method/manner detail) unless explicitly present in the retrieved \
+context; omit the detail rather than infer or guess it.
 - Be concise and specific to the match tactics.\
 """
 
