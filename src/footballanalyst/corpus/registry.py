@@ -29,6 +29,7 @@ class MatchRegistry:
                 label=str(raw_label),
                 competition=str(m.get("competition", "")),
                 season=str(m.get("season", "")),
+                match_date=str(m.get("match_date", "")),
                 statsbomb_blog_url=str(m.get("statsbomb_blog_url", "")),
             )
 
@@ -54,6 +55,10 @@ class MatchRegistry:
     def match_ids(self) -> list[int]:
         """Return list of all match IDs registered in the corpus."""
         return list(self._matches.keys())
+
+    def matches(self) -> list[tuple[int, str]]:
+        """Return list of (match_id, label) tuples registered in the corpus."""
+        return [(mid, self.label(mid)) for mid in self.match_ids()]
 
     def label(self, match_id: int) -> str:
         """Return human-readable label for a given match_id."""

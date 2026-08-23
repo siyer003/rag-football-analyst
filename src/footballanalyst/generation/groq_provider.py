@@ -8,16 +8,16 @@ class LLMConfigError(Exception):
 
 
 class GroqProvider:
-    """LLM provider backed by Groq's API using llama-3.3-70b-versatile.
+    """LLM provider backed by Groq's API.
 
     Requires the ``GROQ_API_KEY`` environment variable to be set.
-    Raises ``LLMConfigError`` on construction if the key is absent, so callers
-    receive a clear domain error rather than a raw SDK exception.
+    Model can be configured via ``GROQ_MODEL`` environment variable
+    (defaults to ``llama-3.3-70b-versatile``).
     """
 
-    MODEL = "llama-3.3-70b-versatile"
+    DEFAULT_MODEL = "llama-3.3-70b-versatile"
 
-    def __init__(self) -> None:
+    def __init__(self, model: str | None = None) -> None:
         api_key = os.environ.get("GROQ_API_KEY")
         if not api_key:
             raise LLMConfigError(
@@ -26,16 +26,18 @@ class GroqProvider:
             )
         from groq import Groq  # local import — SDK not needed until instantiation
 
+        self.model = model or os.environ.get("GROQ_MODEL", self.DEFAULT_MODEL)
         self._client = Groq(api_key=api_key)
 
     def complete(self, system: str, user: str) -> str:
         """Call Groq chat completion and return the assistant message text."""
         response = self._client.chat.completions.create(
-            model=self.MODEL,
+            model=self.model,
             messages=[
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
         )
+
         content = response.choices[0].message.content
         return content if content is not None else ""

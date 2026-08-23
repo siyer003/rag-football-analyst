@@ -11,14 +11,15 @@
 - **08: HybridRetriever (RRF merge)** (`08-hybrid-retriever.md`) - Completed: HybridRetriever with RRF rank fusion, RetrievedContext/RankedChunk types, HybridRetrieverProtocol, and FakeHybridRetriever.
 
 - **09: LLMProvider abstraction + `ask()` happy path** (`09-llm-provider-ask.md`) - Completed: GroqProvider/GeminiProvider/FakeLLMProvider, LLMProviderFactory, build_prompt(), parse_citations() (with structlog warning on out-of-range), and full ask() happy path. Also fixed latent circular import in ingestion/__init__.py.
+- **10: Streamlit UI** (`10-streamlit-ui.md`) - Completed: Streamlit web UI app (`src/footballanalyst/app/ui.py`), match dropdown via `MatchRegistry.matches()`, `ask()` query submission with spinner, citation expander, out-of-corpus info box, `st.error` exception handling, `uv run app` entrypoint, and AppTest smoke suite.
 
 ### Current/Next Ticket
-- **10: Streamlit UI** (`10-streamlit-ui.md`) - Interactive tactical analysis web application.
+- **11: EvalHarness + golden Q&A pairs** (`11-eval-harness.md`) - Retrieval recall and grounding evaluation framework.
 
 ### Remaining Tickets
-- **11: EvalHarness + golden Q&A pairs** (`11-eval-harness.md`) - Retrieval recall and grounding evaluation framework.
 - **12: Structured logging + observability** (`12-structured-logging.md`) - Comprehensive structlog instrumentation.
 - **13: Dockerfile** (`13-dockerfile.md`) - Containerization for Streamlit application deployment.
+
 
 ## Current Architecture
 The system is structured into six core sub-packages:
@@ -40,6 +41,7 @@ The system is structured into six core sub-packages:
 - Offline end-to-end ingestion pipeline (`IngestionPipeline`) and CLI executable (`uv run ingest`) with `--match-ids` support, idempotent upserts, fault tolerance per match, and basic `structlog` progress logging.
 - `HybridRetriever` merging `EventRetriever` + `NarrativeRetriever` results via RRF rank fusion (k=60, top-8), returning a `RetrievedContext` with scored and ranked `RankedChunk` objects.
 - **End-to-end `ask()` happy path**: `GroqProvider`/`GeminiProvider` LLM backends (env-var selectable via `LLM_PROVIDER`), `build_prompt()` with cite-by-`[N]` instructions, `parse_citations()` mapping `[N]` to `ChunkRef` (out-of-range dropped + structlog WARNING), and full `Answer` with citations.
+- **Interactive Streamlit Web UI (`uv run app`)**: Web application (`src/footballanalyst/app/ui.py`) featuring `st.selectbox` match selection via `MatchRegistry.matches()`, question submission, spinner state, formatted answer display, collapsible `st.expander("Sources")` for `ChunkRef` citations, friendly out-of-corpus info box, `st.error` exception handling, and full `AppTest` smoke test suite.
 
 ## Architectural Decisions
 - Use separate EventRetriever and NarrativeRetriever per collection, merged by RRF in HybridRetriever (see `docs/adr/0001-hybrid-retrieval-architecture.md`).
@@ -57,7 +59,7 @@ The system is structured into six core sub-packages:
 
 ## Current State / Important Context
 - **No live API dependencies at request-time**: All retrieval operates against local ChromaDB (`data/chroma/`); raw API data is cached in `data/raw/`.
-- **Environment variables**: `EMBEDDING_MODEL` (`local` | `gemini` | `fake`), `LLM_PROVIDER` (`groq` | `gemini`, default `groq`), `GOOGLE_API_KEY`, `GUARDIAN_API_KEY`, `GROQ_API_KEY`.
+- **Environment variables**: `EMBEDDING_MODEL` (`local` | `gemini` | `fake`), `LLM_PROVIDER` (`groq` | `gemini`, default `groq`), `GROQ_MODEL` (default `llama-3.3-70b-versatile`), `GOOGLE_API_KEY`, `GUARDIAN_API_KEY`, `GROQ_API_KEY`.
 - **Unit vs Integration Testing**: Offline unit tests skip ChromaDB/network using `FakeVectorStore`, `FakeEmbeddingModel`, `FakeHybridRetriever`, and `FakeLLMProvider`. Real ChromaDB tests are marked `@pytest.mark.integration`.
 - **Idempotency**: Chunks use deterministic SHA-256 IDs; vector store upsert is idempotent.
 - **RRF tiebreak**: HybridRetriever uses an event-first stable tiebreak (arbitrary, documented in class docstring, not a semantic preference).
@@ -65,6 +67,7 @@ The system is structured into six core sub-packages:
 
 
 ## Next Work
-- **Ticket 10: Streamlit UI** (`10-streamlit-ui.md`)
-  - **Dependencies**: Ticket 09 (ask() happy path, Answer type).
+- **Ticket 11: EvalHarness + golden Q&A pairs** (`11-eval-harness.md`)
+  - **Dependencies**: Ticket 09 (ask() happy path), Ticket 10 (Streamlit UI).
   - **Relevant ADRs / Architecture to check**: `docs/adr/0003-llm-provider-abstraction.md`, `docs/adr/0005-out-of-corpus-handling.md`.
+

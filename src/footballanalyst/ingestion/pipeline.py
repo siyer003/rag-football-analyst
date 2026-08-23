@@ -67,11 +67,17 @@ class IngestionPipeline:
                 raw_events = self.statsbomb_fetcher.fetch(match_id)
                 event_chunks = self.event_chunker.chunk(raw_events)
 
+                home_team = str(raw_events.metadata.get("home_team", ""))
+                away_team = str(raw_events.metadata.get("away_team", ""))
+                teams = [t for t in [home_team, away_team] if t]
+
                 narratives = self.narrative_fetcher.fetch(
                     match_id=match_id,
                     match_label=str(match_config.get("label", "")),
                     competition=str(match_config.get("competition", "")),
                     statsbomb_blog_url=str(match_config.get("statsbomb_blog_url", "")),
+                    match_date=str(match_config.get("match_date", "")),
+                    teams=teams,
                 )
                 narrative_chunks = self.narrative_chunker.chunk(match_id, narratives)
             except Exception as fetch_err:

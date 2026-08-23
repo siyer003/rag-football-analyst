@@ -22,6 +22,8 @@ dependencies = [
 [project.scripts]
 footballanalyst = "footballanalyst.app:main"
 ingest = "footballanalyst.ingestion.cli:main"
+app = "footballanalyst.app.ui:run_cli"
+
 
 
 [build-system]

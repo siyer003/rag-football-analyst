@@ -17,3 +17,6 @@ data/chroma/*
 !data/chroma/.gitkeep
 data/raw/*
 !data/raw/.gitkeep
+
+#vscode debug
+.vscode

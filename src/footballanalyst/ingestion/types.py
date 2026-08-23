@@ -37,6 +37,7 @@ class MatchConfig(TypedDict, total=False):
     label: str
     competition: str
     season: str
+    match_date: str
     statsbomb_blog_url: str
 
 

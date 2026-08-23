@@ -30,6 +30,14 @@ def test_registry_contains_all_v1_matches() -> None:
     assert registry.contains(99999) is False
     assert (99999 in registry) is False
 
+    matches = registry.matches()
+    assert len(matches) == 8
+    assert isinstance(matches, list)
+    for mid, label in matches:
+        assert isinstance(mid, int)
+        assert isinstance(label, str)
+        assert label == registry.label(mid)
+
 
 def test_registry_fails_fast_on_malformed_entries() -> None:
     with pytest.raises(ValueError, match="missing 'match_id' or 'label'"):

@@ -163,7 +163,18 @@ def test_fetcher_fetches_and_caches_from_http(tmp_path: Path) -> None:
                     "response": {
                         "results": [
                             {
+                                "id": (
+                                    "football/2022/dec/18/"
+                                    "world-cup-final-argentina-france-match-report"
+                                ),
+                                "webTitle": (
+                                    "Argentina beat France on penalties to win "
+                                    "World Cup after stunning final"
+                                ),
                                 "webUrl": "https://theguardian.com/article_test",
+                                "sectionId": "football",
+                                "webPublicationDate": "2022-12-18T21:00:00Z",
+                                "tags": [{"id": "tone/matchreports", "type": "tone"}],
                                 "fields": {"bodyText": "Guardian body article text."},
                             }
                         ]
@@ -190,7 +201,7 @@ def test_fetcher_fetches_and_caches_from_http(tmp_path: Path) -> None:
 
         results = fetcher.fetch(
             match_id=3869685,
-            match_label="Argentina vs France",
+            match_label="FIFA World Cup 2022 Final — Argentina vs France",
             competition="FIFA World Cup",
             statsbomb_blog_url="https://statsbomb.com/blog_test",
         )
@@ -203,7 +214,6 @@ def test_fetcher_fetches_and_caches_from_http(tmp_path: Path) -> None:
     assert (match_dir / "statsbomb_blog.txt").is_file()
     assert (match_dir / "statsbomb_blog.json").is_file()
 
-    # Raw .txt file must be pure raw text without URL header
     raw_txt_content = (match_dir / "guardian.txt").read_text(encoding="utf-8")
     assert not raw_txt_content.startswith("URL:")
     assert raw_txt_content == "Guardian body article text."
@@ -215,3 +225,104 @@ def test_fetcher_fetches_and_caches_from_http(tmp_path: Path) -> None:
     assert "Guardian body article text." in results["guardian"]["text"]
     assert "Wikipedia article content." in results["wikipedia"]["text"]
     assert "StatsBomb article content." in results["statsbomb_blog"]["text"]
+
+
+def test_guardian_fetcher_disqualifies_previews(tmp_path: Path) -> None:
+    from footballanalyst.ingestion.narrative_fetcher import (
+        GuardianArticleNotFoundError,
+    )
+
+    fetcher = NarrativeFetcher(raw_dir=tmp_path / "raw", guardian_api_key="test_key")
+
+    mock_results = [
+        {
+            "id": (
+                "football/2019/jun/01/"
+                "tottenham-liverpool-champions-league-final-player-ratings"
+            ),
+            "webTitle": (
+                "Tottenham 0-2 Liverpool: Champions League final player ratings"
+            ),
+            "webUrl": "https://theguardian.com/player-ratings",
+            "sectionId": "football",
+            "webPublicationDate": "2019-06-01T22:00:00Z",
+            "fields": {"bodyText": "Player ratings content"},
+        },
+        {
+            "id": "football/2019/may/31/pochettino-tottenham-liverpool-preview",
+            "webTitle": "Tottenham v Liverpool Champions League preview",
+            "webUrl": "https://theguardian.com/preview",
+            "sectionId": "football",
+            "webPublicationDate": "2019-05-31T12:00:00Z",
+            "fields": {"bodyText": "Preview content"},
+        },
+    ]
+
+    label = "Champions League 2018/2019 Final — Tottenham Hotspur vs Liverpool"
+    teams = fetcher._resolve_team_names(["Tottenham Hotspur", "Liverpool"], label)
+    patterns = fetcher._build_team_patterns(teams)
+    with pytest.raises(GuardianArticleNotFoundError) as exc_info:
+        fetcher._score_and_select_guardian_article(
+            match_id=22912,
+            match_label=label,
+            results=mock_results,
+            team_patterns=patterns,
+            target_date_str="2019-06-01",
+        )
+
+    assert "No candidate reached minimum confidence threshold" in str(exc_info.value)
+
+
+def test_guardian_fetcher_converges_on_golden_urls(tmp_path: Path) -> None:
+    golden_path = Path("tests/fixtures/narrative/golden_guardian_urls.json")
+    golden_data: dict[str, str] = json.loads(golden_path.read_text(encoding="utf-8"))
+
+    fetcher = NarrativeFetcher(raw_dir=tmp_path / "raw", guardian_api_key="fake_key")
+
+    tottenham_candidates = [
+        {
+            "id": (
+                "football/2019/jun/01/"
+                "tottenham-liverpool-champions-league-final-player-ratings"
+            ),
+            "webTitle": (
+                "Tottenham 0-2 Liverpool: Champions League final player ratings"
+            ),
+            "webUrl": (
+                "https://www.theguardian.com/football/2019/jun/01/"
+                "tottenham-liverpool-champions-league-final-player-ratings"
+            ),
+            "sectionId": "football",
+            "webPublicationDate": "2019-06-01T22:00:22Z",
+            "tags": [{"id": "tone/features", "type": "tone"}],
+            "fields": {"bodyText": "Player ratings content"},
+        },
+        {
+            "id": (
+                "football/2019/jun/01/"
+                "tottenham-liverpool-champions-league-final-match-report"
+            ),
+            "webTitle": (
+                "Liverpool win Champions League final after "
+                "Salah and Origi sink Tottenham"
+            ),
+            "webUrl": golden_data["22912"],
+            "sectionId": "football",
+            "webPublicationDate": "2019-06-01T20:57:05Z",
+            "tags": [{"id": "tone/matchreports", "type": "tone"}],
+            "fields": {"bodyText": "Liverpool win match report content"},
+        },
+    ]
+
+    label = "Champions League 2018/2019 Final — Tottenham Hotspur vs Liverpool"
+    teams = fetcher._resolve_team_names(["Tottenham Hotspur", "Liverpool"], label)
+    patterns = fetcher._build_team_patterns(teams)
+    payload = fetcher._score_and_select_guardian_article(
+        match_id=22912,
+        match_label=label,
+        results=tottenham_candidates,
+        team_patterns=patterns,
+        target_date_str="2019-06-01",
+    )
+
+    assert payload["url"] == golden_data["22912"]
